@@ -1,469 +1,595 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Квитанция</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Квитанция — Заказы</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#000; --primary-light:#333; --primary-dark:#1a1a1a; --primary-deep:#0d0d0d;
+  --bg:#ffffff; --bg2:#f8f8f8; --bg3:#efefef; --card:#fafafa;
+  --border:#ccc; --text:#000; --text2:#666;
+  --green:#2d5016; --red:#8b0000; --blue:#003d82;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:'Montserrat',sans-serif; font-size:14px; min-height:100vh; overflow-x:hidden; }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-            color: #000;
-        }
+.header { background:#fff; border-bottom:2px solid var(--border); padding:16px 20px 12px; position:sticky; top:0; z-index:100; }
+.header-top { display:flex; align-items:center; justify-content:space-between; }
+.logo { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:700; color:#000; letter-spacing:2px; }
+.logo span { font-family:'Montserrat',sans-serif; color:var(--text2); font-weight:400; font-size:10px; display:block; letter-spacing:3px; text-transform:uppercase; }
+.btn-add { background:#000; color:#fff; border:none; border-radius:50px; padding:10px 18px; font-family:'Montserrat',sans-serif; font-weight:600; font-size:13px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+.tabs { display:flex; margin-top:14px; background:var(--bg3); border-radius:10px; padding:3px; }
+.tab { flex:1; text-align:center; padding:8px 4px; border-radius:8px; font-size:11px; font-weight:500; color:var(--text2); cursor:pointer; transition:all 0.2s; }
+.tab.active { background:#000; color:#fff; font-weight:600; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 20px;
-        }
+.stats { display:flex; gap:10px; padding:14px 20px 0; }
+.stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 8px; text-align:center; }
+.stat-num { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; color:#000; line-height:1; }
+.stat-label { font-size:10px; color:var(--text2); margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
 
-        .header h1 {
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
+.toolbar { display:flex; gap:8px; padding:12px 20px; }
+.search { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:'Montserrat',sans-serif; font-size:13px; outline:none; }
+.search::placeholder { color:var(--text2); }
+.btn-tool { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text2); font-size:15px; cursor:pointer; }
 
-        .header p {
-            font-size: 12px;
-            color: #333;
-        }
+.filter-bar { display:none; padding:0 20px 12px; gap:8px; }
+.filter-bar.open { display:flex; }
+.filter-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-family:'Montserrat',sans-serif; font-size:12px; outline:none; }
+.filter-label { font-size:10px; color:var(--text2); display:block; margin-bottom:4px; }
+.btn-filter-clear { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text2); padding:8px 12px; font-size:12px; cursor:pointer; align-self:flex-end; }
 
-        .form-section {
-            margin-bottom: 30px;
-        }
+.orders { padding:0 20px 100px; display:flex; flex-direction:column; gap:12px; }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
+.order-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; animation:slideIn 0.3s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
+.order-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+.order-num { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:700; color:#000; }
+.order-meta { font-size:11px; color:var(--text2); margin-top:2px; }
+.status-badge { font-size:10px; font-weight:600; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; }
+.status-active   { background:#e8e8e8; color:#000; border:1px solid #999; }
+.status-done     { background:#d4f1d4; color:#2d5016; border:1px solid #90ee90; }
+.status-archived { background:#d3d3d3; color:#555; border:1px solid #999; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+.order-body { padding:12px 16px; }
+.order-desc { font-size:13px; color:var(--text); line-height:1.55; margin-bottom:10px; }
+.order-params { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+.param { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:4px 9px; font-size:11px; color:var(--text2); }
+.param b { color:var(--text); }
+.order-photo { width:100%; max-height:160px; object-fit:cover; border-radius:10px; margin-bottom:10px; cursor:pointer; }
 
-        .form-group label {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.contacts-row { display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); align-items:center; flex-wrap:wrap; }
+.contact-phone { font-size:13px; color:#000; font-weight:500; flex:1; min-width:120px; }
+.contact-phone a { color:#000; text-decoration:none; }
+.messenger-btns { display:flex; gap:6px; }
+.btn-messenger { width:36px; height:36px; border-radius:10px; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; overflow:hidden; color:#fff; font-size:18px; font-weight:bold; }
+.btn-tg  { background:#1f77b4; }
+.btn-wa  { background:#25a245; }
+.btn-vb  { background:#665acd; }
+.btn-max { background:#ff6b35; }
 
-        .form-group input,
-        .form-group textarea {
-            border: 1px solid #000;
-            padding: 10px;
-            font-family: 'Arial', sans-serif;
-            font-size: 13px;
-            border-radius: 0;
-        }
+.notes-section { padding:10px 16px; }
+.notes-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.notes-title { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--text2); }
+.btn-note-add { background:transparent; border:1px solid var(--border); border-radius:6px; color:#000; font-size:11px; padding:3px 8px; cursor:pointer; }
+.note-item { background:var(--bg3); border-radius:8px; padding:8px 28px 8px 10px; margin-bottom:6px; font-size:12px; color:var(--text); line-height:1.4; position:relative; }
+.note-date { font-size:10px; color:var(--text2); margin-top:3px; }
+.note-del { position:absolute; top:6px; right:8px; color:var(--text2); font-size:12px; cursor:pointer; background:none; border:none; }
+.note-input-wrap { display:none; gap:6px; margin-top:6px; }
+.note-input-wrap.open { display:flex; }
+.note-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:8px; color:var(--text); font-family:'Montserrat',sans-serif; font-size:12px; outline:none; }
+.btn-note-save { background:#000; border:none; border-radius:8px; color:#fff; font-size:11px; font-weight:600; padding:8px 12px; cursor:pointer; }
 
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
+.order-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 16px 14px; }
+.deadline { font-size:11px; color:var(--text2); }
+.deadline.urgent { color:var(--red); font-weight:600; }
+.deadline.soon   { color:#cc6600; }
+.order-actions { display:flex; gap:7px; }
+.btn-action { background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:15px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.btn-done  { border-color:#999; color:var(--green); }
+.btn-arch  { border-color:#999; color:#666; }
+.btn-del   { border-color:#999; color:var(--red); }
+.btn-share { border-color:#999; color:var(--blue); }
+.btn-edit  { border-color:#999; color:#000; }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            background-color: #f9f9f9;
-        }
+.empty { text-align:center; padding:60px 20px; color:var(--text2); }
+.empty-icon { font-size:48px; margin-bottom:12px; opacity:0.4; }
+.empty-text { font-family:'Cormorant Garamond',serif; font-size:20px; }
 
-        /* Таблица */
-        .table-section {
-            margin-bottom: 30px;
-        }
+.source-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; padding:2px 7px; border-radius:10px; font-weight:600; }
+.src-tg    { background:#e3f2fd; color:#1f77b4; border:1px solid #90caf9; }
+.src-wa    { background:#e8f5e9; color:#25a245; border:1px solid #81c784; }
+.src-vb    { background:#f3e5f5; color:#665acd; border:1px solid #ce93d8; }
+.src-max   { background:#fff3e0; color:#ff6b35; border:1px solid #ffb74d; }
+.src-other { background:#f5f5f5; color:#666; border:1px solid #ccc; }
 
-        .table-section h3 {
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:flex-end; }
+.modal-overlay.open { display:flex; }
+.modal { background:#fff; border-top:1px solid var(--border); border-radius:24px 24px 0 0; width:100%; max-height:94vh; overflow-y:auto; padding:20px 20px 40px; animation:slideUp 0.3s ease; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.modal-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#000; margin-bottom:20px; }
+.form-group { margin-bottom:14px; }
+.form-label { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--text2); margin-bottom:6px; display:block; }
+.form-input,.form-textarea,.form-select { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-family:'Montserrat',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; }
+.form-input:focus,.form-textarea:focus { border-color:#000; }
+.form-select option { background:#fff; }
+.form-textarea { min-height:90px; resize:none; }
+.form-row { display:flex; gap:10px; }
+.form-row .form-group { flex:1; }
+.photo-upload { border:2px dashed var(--border); border-radius:12px; padding:18px; text-align:center; cursor:pointer; color:var(--text2); font-size:12px; }
+.photo-upload-icon { font-size:28px; margin-bottom:4px; }
+.photo-preview { width:100%; max-height:160px; object-fit:cover; border-radius:10px; margin-top:10px; display:none; }
+.btn-save { width:100%; background:#000; color:#fff; border:none; border-radius:12px; padding:15px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:14px; cursor:pointer; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.btn-cancel { width:100%; background:transparent; color:var(--text2); border:1px solid var(--border); border-radius:12px; padding:13px; font-family:'Montserrat',sans-serif; font-size:13px; cursor:pointer; margin-top:10px; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 2px solid #000;
-            font-size: 12px;
-        }
+.exp-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:300; align-items:center; justify-content:center; padding:20px; }
+.exp-modal.open { display:flex; }
+.exp-box { background:#fff; border:1px solid var(--border); border-radius:20px; padding:24px; width:100%; max-width:340px; }
+.exp-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:#000; margin-bottom:18px; text-align:center; }
+.exp-btn { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; color:var(--text); padding:13px; font-family:'Montserrat',sans-serif; font-size:13px; cursor:pointer; margin-bottom:10px; text-align:left; display:flex; align-items:center; gap:10px; }
+.exp-icon { font-size:20px; }
 
-        table th {
-            background: #f0f0f0;
-            border: 1px solid #000;
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.photo-fs { display:none; position:fixed; inset:0; background:#000; z-index:400; align-items:center; justify-content:center; }
+.photo-fs.open { display:flex; }
+.photo-fs img { max-width:100%; max-height:100%; object-fit:contain; }
+.photo-fs-close { position:absolute; top:20px; right:20px; color:#fff; font-size:28px; cursor:pointer; background:rgba(0,0,0,0.5); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border:none; }
 
-        table td {
-            border: 1px solid #000;
-            padding: 12px;
-            height: 40px;
-            vertical-align: top;
-        }
-
-        table input {
-            width: 100%;
-            border: none;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            font-size: 12px;
-        }
-
-        table input:focus {
-            outline: none;
-            background-color: #fffacd;
-        }
-
-        .row-number {
-            width: 40px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        /* Итого */
-        .totals-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .total-box {
-            border: 2px solid #000;
-            padding: 20px;
-        }
-
-        .total-box h4 {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-
-        .total-row label {
-            font-weight: bold;
-        }
-
-        .total-row input {
-            border: none;
-            border-bottom: 1px solid #000;
-            width: 150px;
-            text-align: right;
-            font-family: 'Arial', sans-serif;
-            padding: 2px 5px;
-        }
-
-        /* Подпись */
-        .signature-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #000;
-        }
-
-        .signature-box {
-            text-align: center;
-        }
-
-        .signature-line {
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            font-size: 11px;
-            margin-top: 40px;
-        }
-
-        /* Кнопки */
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-            justify-content: center;
-        }
-
-        button {
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: bold;
-            border: 2px solid #000;
-            background: #fff;
-            color: #000;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-        }
-
-        button:hover {
-            background: #000;
-            color: #fff;
-        }
-
-        button.print {
-            background: #000;
-            color: #fff;
-        }
-
-        button.print:hover {
-            background: #333;
-        }
-
-        .btn-clear {
-            background: #f5f5f5;
-        }
-
-        /* Печать */
-        @media print {
-            body {
-                background: #fff;
-                padding: 0;
-            }
-
-            .container {
-                box-shadow: none;
-                padding: 0;
-            }
-
-            .buttons {
-                display: none;
-            }
-
-            table input,
-            .form-group input,
-            .form-group textarea {
-                border: none;
-                background: none;
-            }
-        }
-
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .totals-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .signature-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .container {
-                padding: 20px;
-            }
-
-            table {
-                font-size: 10px;
-            }
-
-            table th,
-            table td {
-                padding: 8px;
-                height: auto;
-            }
-        }
-    </style>
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:12px 20px; font-size:13px; color:#000; z-index:999; transition:transform 0.3s ease; white-space:nowrap; pointer-events:none; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>КВИТАНЦИЯ</h1>
-        <p>Документ приема-передачи ювелирных изделий</p>
-    </div>
-
-    <!-- Основные поля -->
-    <div class="form-section">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="receipt-number">Номер квитанции</label>
-                <input type="text" id="receipt-number" placeholder="КВ. 000001">
-            </div>
-            <div class="form-group">
-                <label for="client-name">Заказчик (ФИО)</label>
-                <input type="text" id="client-name" placeholder="Введите имя клиента">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="date-received">Дата приема</label>
-                <input type="date" id="date-received">
-            </div>
-            <div class="form-group">
-                <label for="date-delivery">Дата выдачи</label>
-                <input type="date" id="date-delivery">
-            </div>
-        </div>
-
-        <div class="form-row full">
-            <div class="form-group">
-                <label for="description">Описание ценностей и камней</label>
-                <textarea id="description" placeholder="По��робное описание изделий, материалов и камней..."></textarea>
-            </div>
-        </div>
-    </div>
-
-    <!-- Таблица деталей -->
-    <div class="table-section">
-        <h3>Детали изделий</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th class="row-number">№</th>
-                    <th>Наименование метала и камней</th>
-                    <th>Проба</th>
-                    <th>Фактическая лигатура</th>
-                    <th>В пересчете на пробу (гр)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="row-number">1</td>
-                    <td><input type="text" placeholder="Золото с бриллиантом"></td>
-                    <td><input type="text" placeholder="585"></td>
-                    <td><input type="text" placeholder="Золото"></td>
-                    <td><input type="number" placeholder="0.00" step="0.01"></td>
-                </tr>
-                <tr>
-                    <td class="row-number">2</td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="number" placeholder="0.00" step="0.01"></td>
-                </tr>
-                <tr>
-                    <td class="row-number">3</td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="number" placeholder="0.00" step="0.01"></td>
-                </tr>
-                <tr>
-                    <td class="row-number">4</td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="text" placeholder=""></td>
-                    <td><input type="number" placeholder="0.00" step="0.01"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Итоги -->
-    <div class="totals-section">
-        <div class="total-box">
-            <h4>Общие сведения</h4>
-            <div class="total-row">
-                <label>Общее количество изделий:</label>
-                <input type="number" id="total-items" placeholder="0" value="0">
-            </div>
-            <div class="total-row">
-                <label>Общий вес (гр):</label>
-                <input type="number" id="total-weight" placeholder="0.00" step="0.01" value="0.00">
-            </div>
-        </div>
-
-        <div class="total-box">
-            <h4>Стоимость работ</h4>
-            <div class="total-row">
-                <label>Стоимость (₽):</label>
-                <input type="number" id="total-cost" placeholder="0.00" step="0.01" value="0.00">
-            </div>
-            <div class="total-row">
-                <label>Комиссия (%):</label>
-                <input type="number" id="commission" placeholder="0" value="0">
-            </div>
-        </div>
-    </div>
-
-    <!-- Подписи -->
-    <div class="signature-section">
-        <div class="signature-box">
-            <p style="font-size: 11px; margin-bottom: 30px;">ПОЛУЧИЛ / ПОЛУЧИЛА</p>
-            <div class="signature-line">Подпись и ФИО клиента</div>
-        </div>
-        <div class="signature-box">
-            <p style="font-size: 11px; margin-bottom: 30px;">ПРИНЯЛ / ПРИНЯЛА</p>
-            <div class="signature-line">Подпись и ФИО мастера</div>
-        </div>
-    </div>
-
-    <!-- Кнопки -->
-    <div class="buttons">
-        <button class="print" onclick="window.print()">🖨️ Печать</button>
-        <button class="btn-clear" onclick="clearForm()">✕ Очистить</button>
-        <button onclick="downloadPDF()">💾 Скачать PDF</button>
-    </div>
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Квитанция <span>Управление заказами</span></div>
+    <button class="btn-add" onclick="openModal()">+ Заказ</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('active',this)">В работе</div>
+    <div class="tab" onclick="setTab('done',this)">Готово</div>
+    <div class="tab" onclick="setTab('archived',this)">Архив</div>
+  </div>
 </div>
 
+<div class="stats">
+  <div class="stat"><div class="stat-num" id="stat-active">0</div><div class="stat-label">В работе</div></div>
+  <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Готово</div></div>
+  <div class="stat"><div class="stat-num" id="stat-archived">0</div><div class="stat-label">Архив</div></div>
+</div>
+
+<div class="toolbar">
+  <input class="search" type="text" placeholder="🔍  Поиск..." oninput="renderOrders()">
+  <button class="btn-tool" onclick="toggleFilter()">📅</button>
+  <button class="btn-tool" onclick="openExport()">⚙️</button>
+</div>
+<div class="filter-bar" id="filter-bar">
+  <div style="flex:1"><label class="filter-label">С даты</label><input class="filter-input" type="date" id="filter-from" onchange="renderOrders()"></div>
+  <div style="flex:1"><label class="filter-label">По дату</label><input class="filter-input" type="date" id="filter-to" onchange="renderOrders()"></div>
+  <button class="btn-filter-clear" onclick="clearFilter()">✕</button>
+</div>
+
+<div class="orders" id="orders-list"></div>
+
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">📋 Новый заказ</div>
+    <input type="hidden" id="edit-id" value="">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">№ Квитанции</label>
+        <input class="form-input" id="f-num" placeholder="КВ. 013916" type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Источник</label>
+        <select class="form-input" id="f-source">
+          <option value="">— выбрать —</option>
+          <option value="tg">Telegram</option>
+          <option value="wa">WhatsApp</option>
+          <option value="vb">Viber</option>
+          <option value="max">MAX</option>
+          <option value="vk">ВКонтакте</option>
+          <option value="live">Лично</option>
+          <option value="other">Другое</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Клиент</label>
+        <input class="form-input" id="f-client" placeholder="Имя / Салон" type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Телефон</label>
+        <input class="form-input" id="f-phone" placeholder="+7 900 000 00 00" type="tel">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Описание заказа</label>
+      <textarea class="form-textarea" id="f-desc" placeholder="2 обручальных кольца, мужское 20р 5мм, женское 16.5р 3.5мм..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Металл / Проба</label>
+        <input class="form-input" id="f-metal" placeholder="Золото 585" type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Вес (гр)</label>
+        <input class="form-input" id="f-weight" placeholder="7" type="text">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Срок</label>
+        <input class="form-input" id="f-deadline" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Сумма (₽)</label>
+        <input class="form-input" id="f-price" placeholder="15000" type="number">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Фото / Референс</label>
+      <div class="photo-upload" onclick="document.getElementById('f-photo').click()">
+        <div class="photo-upload-icon">📎</div>
+        <div>Нажмите чтобы прикрепить фото</div>
+      </div>
+      <input type="file" id="f-photo" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+      <img class="photo-preview" id="photo-preview">
+    </div>
+    <button class="btn-save" id="btn-save" onclick="saveOrder()">Сохранить заказ</button>
+    <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+  </div>
+</div>
+
+<div class="exp-modal" id="exp-modal" onclick="if(event.target===this)closeExport()">
+  <div class="exp-box">
+    <div class="exp-title">⚙️ Данные</div>
+    <button class="exp-btn" onclick="exportData()"><span class="exp-icon">💾</span><span><b>Экспорт резервной копии</b><br><small style="color:var(--text2)">Сохранить все заказы файлом</small></span></button>
+    <button class="exp-btn" onclick="document.getElementById('import-file').click()"><span class="exp-icon">📂</span><span><b>Импорт резервной копии</b><br><small style="color:var(--text2)">Восстановить из файла</small></span></button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+    <button class="exp-btn" onclick="closeExport()"><span class="exp-icon">✕</span><span>Закрыть</span></button>
+  </div>
+</div>
+
+<div class="photo-fs" id="photo-fs">
+  <button class="photo-fs-close" onclick="closePhotoFs()">✕</button>
+  <img id="photo-fs-img" src="">
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-    function clearForm() {
-        if (confirm('Вы уверены? Все данные будут удалены.')) {
-            document.querySelectorAll('input, textarea').forEach(el => el.value = '');
-        }
-    }
+let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+let currentTab = 'active';
+let photoData = null;
+let editingId = null;
 
-    function downloadPDF() {
-        alert('Функция скачивания PDF будет доступна в следующей версии');
-    }
+function save() { localStorage.setItem('orders', JSON.stringify(orders)); }
 
-    // Автосохранение в localStorage
-    document.querySelectorAll('input, textarea').forEach(el => {
-        el.addEventListener('change', () => {
-            localStorage.setItem(el.id, el.value);
-        });
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
 
-        // Загрузка сохраненных данных
-        if (localStorage.getItem(el.id)) {
-            el.value = localStorage.getItem(el.id);
-        }
+function openModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = '📋 Новый заказ';
+  document.getElementById('btn-save').textContent = 'Сохранить заказ';
+  document.getElementById('edit-id').value = '';
+  ['f-num','f-client','f-phone','f-desc','f-metal','f-weight','f-price'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('f-deadline').value='';
+  document.getElementById('f-source').value='';
+  document.getElementById('photo-preview').style.display='none';
+  photoData = null;
+  document.getElementById('modal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const o = orders.find(x=>x.id===id); if(!o) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = '✏️ Редактировать заказ';
+  document.getElementById('btn-save').textContent = 'Сохранить изменения';
+  document.getElementById('edit-id').value = id;
+  document.getElementById('f-num').value      = o.num      || '';
+  document.getElementById('f-client').value   = o.client   || '';
+  document.getElementById('f-phone').value    = o.phone    || '';
+  document.getElementById('f-source').value   = o.source   || '';
+  document.getElementById('f-desc').value     = o.desc     || '';
+  document.getElementById('f-metal').value    = o.metal    || '';
+  document.getElementById('f-weight').value   = o.weight   || '';
+  document.getElementById('f-price').value    = o.price    || '';
+  document.getElementById('f-deadline').value = o.deadline || '';
+  const prev = document.getElementById('photo-preview');
+  if(o.photo) { prev.src=o.photo; prev.style.display='block'; photoData=o.photo; }
+  else { prev.style.display='none'; photoData=null; }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); editingId=null; }
+
+function previewPhoto(input) {
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    photoData=e.target.result;
+    const img=document.getElementById('photo-preview');
+    img.src=photoData; img.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveOrder() {
+  const num    = document.getElementById('f-num').value.trim();
+  const client = document.getElementById('f-client').value.trim();
+  const desc   = document.getElementById('f-desc').value.trim();
+  if(!num||!client||!desc) { showToast('⚠️ Заполните номер, клиента и описание'); return; }
+
+  if(editingId) {
+    const o = orders.find(x=>x.id===editingId); if(!o) return;
+    o.num      = num;
+    o.client   = client;
+    o.phone    = document.getElementById('f-phone').value.trim();
+    o.source   = document.getElementById('f-source').value;
+    o.desc     = desc;
+    o.metal    = document.getElementById('f-metal').value.trim();
+    o.weight   = document.getElementById('f-weight').value.trim();
+    o.price    = document.getElementById('f-price').value.trim();
+    o.deadline = document.getElementById('f-deadline').value;
+    if(photoData) o.photo = photoData;
+    o.edited   = new Date().toLocaleDateString('ru-RU');
+    save(); closeModal(); renderOrders(); showToast('✏️ Заказ обновлён');
+  } else {
+    orders.unshift({
+      id:Date.now(), num, client,
+      phone:    document.getElementById('f-phone').value.trim(),
+      source:   document.getElementById('f-source').value,
+      desc, metal:document.getElementById('f-metal').value.trim(),
+      weight:   document.getElementById('f-weight').value.trim(),
+      price:    document.getElementById('f-price').value.trim(),
+      deadline: document.getElementById('f-deadline').value,
+      photo:    photoData, status:'active',
+      created:  new Date().toLocaleDateString('ru-RU'),
+      createdTs:Date.now(), notes:[]
     });
-</script>
+    save(); closeModal(); renderOrders(); updateStats();
+    showToast('✅ Заказ добавлен');
+  }
+}
 
+function setStatus(id,status) {
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  o.status=status; save(); renderOrders(); updateStats();
+  const labels={done:'✅ Готово',archived:'📦 В архив',active:'🔄 В работу'};
+  showToast(labels[status]||'');
+}
+
+function deleteOrder(id) {
+  if(!confirm('Удалить заказ?')) return;
+  orders=orders.filter(x=>x.id!==id);
+  save(); renderOrders(); updateStats(); showToast('🗑 Удалён');
+}
+
+function toggleNoteInput(id) {
+  const el=document.getElementById('note-input-'+id);
+  el.classList.toggle('open');
+  if(el.classList.contains('open')) el.querySelector('input').focus();
+}
+
+function saveNote(id) {
+  const input=document.getElementById('note-text-'+id);
+  const text=input.value.trim(); if(!text) return;
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  if(!o.notes) o.notes=[];
+  o.notes.push({text,date:new Date().toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})});
+  input.value=''; save(); renderOrders();
+}
+
+function deleteNote(orderId,idx) {
+  const o=orders.find(x=>x.id===orderId); if(!o) return;
+  o.notes.splice(idx,1); save(); renderOrders();
+}
+
+function shareOrder(id) {
+  const o=orders.find(x=>x.id===id); if(!o) return;
+  const srcLabel={tg:'Telegram',wa:'WhatsApp',vb:'Viber',max:'MAX',vk:'ВКонтакте',live:'Лично',other:'Другое'}[o.source]||'';
+  const text=`📋 ${o.num}\n👤 ${o.client}${o.phone?'\n📞 '+o.phone:''}${srcLabel?'\n📲 '+srcLabel:''}\n📝 ${o.desc}${o.metal?'\n🔗 '+o.metal:''}${o.weight?'\n⚖️ '+o.weight+' гр':''}${o.price?'\n💰 '+Number(o.price).toLocaleString('ru')+' ₽':''}${o.deadline?'\n📅 '+new Date(o.deadline).toLocaleDateString('ru-RU'):''}`;
+  if(navigator.share) navigator.share({title:o.num,text}).catch(()=>copyText(text));
+  else copyText(text);
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t).then(()=>showToast('📋 Скопировано')).catch(()=>showToast('⚠️ Не удалось'));
+}
+
+function openMessenger(type,phone) {
+  const clean=phone.replace(/\D/g,'');
+  const urls={tg:`https://t.me/+${clean}`,wa:`https://wa.me/${clean}`,vb:`viber://chat?number=%2B${clean}`,max:`https://max.ru/`};
+  if(urls[type]) window.open(urls[type],'_blank');
+}
+
+function openExport()  { document.getElementById('exp-modal').classList.add('open'); }
+function closeExport() { document.getElementById('exp-modal').classList.remove('open'); }
+
+function exportData() {
+  const blob=new Blob([JSON.stringify(orders,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='orders_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(url);
+  closeExport(); showToast('💾 Сохранено');
+}
+
+function importData(input) {
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const imported=JSON.parse(e.target.result);
+      if(!Array.isArray(imported)) throw new Error();
+      if(!confirm(`Импортировать ${imported.length} заказов?`)) return;
+      orders=imported; save(); renderOrders(); updateStats();
+      closeExport(); showToast('📂 Импорт: '+imported.length+' заказов');
+    } catch { showToast('⚠️ Ошибка файла'); }
+  };
+  reader.readAsText(file); input.value='';
+}
+
+function toggleFilter() { document.getElementById('filter-bar').classList.toggle('open'); }
+function clearFilter() {
+  document.getElementById('filter-from').value='';
+  document.getElementById('filter-to').value='';
+  document.getElementById('filter-bar').classList.remove('open');
+  renderOrders();
+}
+
+function setTab(tab,el) {
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); renderOrders();
+}
+
+function openPhotoFs(src) { document.getElementById('photo-fs-img').src=src; document.getElementById('photo-fs').classList.add('open'); }
+function closePhotoFs()   { document.getElementById('photo-fs').classList.remove('open'); }
+
+function dlClass(dl) {
+  if(!dl) return '';
+  const d=(new Date(dl)-new Date())/86400000;
+  return d<0?'urgent':d<2?'urgent':d<5?'soon':'';
+}
+
+function dlText(dl) {
+  if(!dl) return '';
+  const diff=Math.ceil((new Date(dl)-new Date())/86400000);
+  const date=new Date(dl).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+  if(diff<0)   return `⚠️ Просрочен! ${date}`;
+  if(diff===0) return `🔥 Сегодня! ${date}`;
+  if(diff===1) return `⏰ Завтра, ${date}`;
+  return `📅 ${date} (через ${diff} дн.)`;
+}
+
+function sourceBadge(s) {
+  const map={tg:['src-tg','TG'],wa:['src-wa','WA'],vb:['src-vb','VB'],max:['src-max','MAX'],vk:['src-other','VK'],live:['src-other','Лично'],other:['src-other','—']};
+  const m=map[s]; if(!m) return '';
+  return `<span class="source-badge ${m[0]}">${m[1]}</span>`;
+}
+
+function renderOrders() {
+  const search=document.querySelector('.search').value.toLowerCase();
+  const from=document.getElementById('filter-from').value;
+  const to=document.getElementById('filter-to').value;
+  const list=document.getElementById('orders-list');
+
+  const filtered=orders.filter(o=>{
+    if(o.status!==currentTab) return false;
+    if(search&&![o.num,o.client,o.desc,o.phone||''].some(f=>f.toLowerCase().includes(search))) return false;
+    if(from&&o.createdTs<new Date(from).getTime()) return false;
+    if(to&&o.createdTs>new Date(to).getTime()+86400000) return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Нет заказов</div></div>`;
+    return;
+  }
+
+  list.innerHTML=filtered.map(o=>{
+    const params=[];
+    if(o.metal)  params.push(`<span class="param"><b>Металл:</b> ${o.metal}</span>`);
+    if(o.weight) params.push(`<span class="param"><b>Вес:</b> ${o.weight} гр</span>`);
+    if(o.price)  params.push(`<span class="param"><b>Сумма:</b> ${Number(o.price).toLocaleString('ru')} ₽</span>`);
+    const sLabel={active:'В работе',done:'Готово',archived:'Архив'}[o.status];
+    const sClass={active:'status-active',done:'status-done',archived:'status-archived'}[o.status];
+
+    const messengerBtns = o.phone ? `
+      <div class="messenger-btns">
+        <button class="btn-messenger btn-tg" onclick="openMessenger('tg','${o.phone}')" title="Telegram">💬</button>
+        <button class="btn-messenger btn-wa" onclick="openMessenger('wa','${o.phone}')" title="WhatsApp">📱</button>
+        <button class="btn-messenger btn-vb" onclick="openMessenger('vb','${o.phone}')" title="Viber">📲</button>
+        <button class="btn-messenger btn-max" onclick="openMessenger('max','${o.phone}')" title="MAX">M</button>
+      </div>` : '';
+
+    const contactsRow=(o.phone||messengerBtns)?`
+      <div class="contacts-row">
+        ${o.phone?`<div class="contact-phone"><a href="tel:${o.phone}">📞 ${o.phone}</a></div>`:''}
+        ${messengerBtns}
+      </div>`:'';
+
+    const notes=(o.notes||[]).map((n,i)=>`
+      <div class="note-item">${n.text}<div class="note-date">${n.date}</div>
+        <button class="note-del" onclick="deleteNote(${o.id},${i})">✕</button>
+      </div>`).join('');
+
+    const editedBadge = o.edited ? `<span style="font-size:10px;color:var(--text2);margin-left:6px">ред. ${o.edited}</span>` : '';
+
+    const actions = o.status==='active'
+      ? `<button class="btn-action btn-edit"  onclick="openEditModal(${o.id})"          title="Редактировать">✏️</button>
+         <button class="btn-action btn-done"  onclick="setStatus(${o.id},'done')"       title="Готово">✅</button>
+         <button class="btn-action btn-arch"  onclick="setStatus(${o.id},'archived')"   title="Архив">📦</button>
+         <button class="btn-action btn-share" onclick="shareOrder(${o.id})"             title="Поделиться">📤</button>
+         <button class="btn-action btn-del"   onclick="deleteOrder(${o.id})"            title="Удалить">🗑</button>`
+      : o.status==='done'
+      ? `<button class="btn-action btn-edit"  onclick="openEditModal(${o.id})"          title="Редактировать">✏️</button>
+         <button class="btn-action btn-arch"  onclick="setStatus(${o.id},'archived')"   title="Архив">📦</button>
+         <button class="btn-action"           onclick="setStatus(${o.id},'active')"     title="Вернуть">🔄</button>
+         <button class="btn-action btn-share" onclick="shareOrder(${o.id})"             title="Поделиться">📤</button>
+         <button class="btn-action btn-del"   onclick="deleteOrder(${o.id})"            title="Удалить">🗑</button>`
+      : `<button class="btn-action btn-edit"  onclick="openEditModal(${o.id})"          title="Редактировать">✏️</button>
+         <button class="btn-action"           onclick="setStatus(${o.id},'active')"     title="Вернуть">🔄</button>
+         <button class="btn-action btn-share" onclick="shareOrder(${o.id})"             title="Поделиться">📤</button>
+         <button class="btn-action btn-del"   onclick="deleteOrder(${o.id})"            title="Удалить">🗑</button>`;
+
+    return `
+    <div class="order-card">
+      <div class="order-header">
+        <div>
+          <div class="order-num">${o.num} ${sourceBadge(o.source)}</div>
+          <div class="order-meta">${o.client} · ${o.created}${editedBadge}</div>
+        </div>
+        <span class="status-badge ${sClass}">${sLabel}</span>
+      </div>
+      <div class="order-body">
+        ${o.photo?`<img class="order-photo" src="${o.photo}" onclick="openPhotoFs('${o.photo}')">` :''}
+        <div class="order-desc">${o.desc}</div>
+        ${params.length?`<div class="order-params">${params.join('')}</div>`:''}
+      </div>
+      ${contactsRow}
+      <div class="notes-section">
+        <div class="notes-header">
+          <span class="notes-title">💬 Заметки ${(o.notes||[]).length?'('+(o.notes||[]).length+')':''}</span>
+          <button class="btn-note-add" onclick="toggleNoteInput(${o.id})">+ Добавить</button>
+        </div>
+        ${notes}
+        <div class="note-input-wrap" id="note-input-${o.id}">
+          <input class="note-input" id="note-text-${o.id}" placeholder="Написать заметку..." onkeydown="if(event.key==='Enter')saveNote(${o.id})">
+          <button class="btn-note-save" onclick="saveNote(${o.id})">OK</button>
+        </div>
+      </div>
+      <div class="order-footer">
+        <div class="deadline ${dlClass(o.deadline)}">${dlText(o.deadline)}</div>
+        <div class="order-actions">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  document.getElementById('stat-active').textContent  = orders.filter(o=>o.status==='active').length;
+  document.getElementById('stat-done').textContent    = orders.filter(o=>o.status==='done').length;
+  document.getElementById('stat-archived').textContent= orders.filter(o=>o.status==='archived').length;
+}
+
+renderOrders(); updateStats();
+</script>
 </body>
 </html>
